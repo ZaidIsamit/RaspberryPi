@@ -1,0 +1,30 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "lecturas",
+      "fieldPath": "estado",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "lecturas",
+      "fieldPath": "tMin",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "lecturas",
+      "fieldPath": "tMax",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "lecturas",
+      "fieldPath": "nClima",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "alertas",
+      "fieldPath": "mensaje",
+      "indexes": []
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+rules_version = '2';
+// Security Rules — aislamiento por organización y rol.
+// * Los usuarios llevan en su token los custom claims { orgId, role } (los asigna el seed / admin SDK).
+//   Así las reglas no necesitan hacer get() extra (no consumen lecturas adicionales).
+// * El navegador SOLO puede leer datos de SU organización. Nadie escribe desde el cliente:
+//   toda escritura pasa por la API de Vercel (Admin SDK), que valida rol y datos.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function miembro(orgId) {
+      return request.auth != null && request.auth.token.orgId == orgId;
+    }
+
+    match /orgs/{orgId} {
+      allow read: if miembro(orgId);
+      allow write: if false;
+
+      match /devices/{deviceId} {
+        allow read: if miembro(orgId);
+        allow write: if false;
+
+        match /lecturas/{minuto} {
+          allow read: if miembro(orgId);
+          allow write: if false;
+        }
+        match /alertas/{alertaId} {
+          allow read: if miembro(orgId);
+          allow write: if false;
+        }
+      }
+    }
+
+    // Todo lo demás queda cerrado
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

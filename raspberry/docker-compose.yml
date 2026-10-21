@@ -1,0 +1,87 @@
+# Smart Campus IoT - microservicios de la Raspberry Pi 3
+# Uso:  docker compose up -d --build
+# Todos los servicios se reinician solos y arrancan al encender la placa
+# (Docker queda habilitado con: sudo systemctl enable docker).
+
+name: smart-campus
+
+x-python-service: &python-service
+  restart: unless-stopped
+  env_file: .env
+  depends_on:
+    mosquitto:
+      condition: service_healthy
+  healthcheck:
+    # Cada servicio "toca" /tmp/healthy mientras funciona; si pasa >60 s sin hacerlo, queda unhealthy
+    test: ["CMD", "python", "-c", "import os,time,sys; sys.exit(0 if time.time()-os.path.getmtime('/tmp/healthy')<60 else 1)"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 40s
+  logging:
+    driver: json-file
+    options:
+      max-size: "5m"
+      max-file: "2"
+
+services:
+  # 1) Broker de mensajería: desacopla productores y consumidores dentro del dispositivo
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+    # Sin "ports": el broker solo es accesible dentro de la red interna de Docker
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "$$SYS/broker/uptime", "-C", "1", "-W", "8"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  # 2) Adquisición de clima (DHT11/DHT22 en GPIO17 vía driver del kernel / IIO)
+  sensor-clima:
+    <<: *python-service
+    build: ./sensor-clima
+    image: smart-campus/sensor-clima:1.0
+
+  # 3) Adquisición de movimiento (PIR HC-SR501 en GPIO18)
+  sensor-movimiento:
+    <<: *python-service
+    build: ./sensor-movimiento
+    image: smart-campus/sensor-movimiento:1.0
+    # Se mapea solo el dispositivo GPIO necesario, sin modo privilegiado
+    devices:
+      - /dev/gpiochip0:/dev/gpiochip0
+
+  # 4) Procesamiento: valida, filtra, agrega por minuto, combina sensores y detecta umbrales
+  procesamiento:
+    <<: *python-service
+    build: ./procesamiento
+    image: smart-campus/procesamiento:1.0
+
+  # 5) Sincronización: buffer SQLite + envío por lotes a la API de Vercel + obtiene configuración
+  sincronizacion:
+    <<: *python-service
+    build: ./sincronizacion
+    image: smart-campus/sincronizacion:1.0
+    volumes:
+      - sync-data:/data
+
+  # 6) Salud (opcional): estado de microservicios, CPU, RAM y temperatura de la placa
+  salud:
+    <<: *python-service
+    build: ./salud
+    image: smart-campus/salud:1.0
+    ports:
+      - "127.0.0.1:8080:8080"   # solo accesible desde la propia Raspberry (curl localhost:8080/health)
+
+volumes:
+  mosquitto-data:
+  sync-data:
