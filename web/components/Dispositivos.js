@@ -1,8 +1,10 @@
 "use client";
 import { useState } from "react";
+import Icono from "@/components/Iconos";
 import { api } from "@/lib/firebaseClient";
+import { enLinea, ultimaConexionMs } from "@/lib/formato";
 
-const CAMPOS = [
+export const CAMPOS = [
   ["intervaloClimaSeg", "Intervalo lectura clima (s)", "number"],
   ["intervaloEnvioSeg", "Intervalo envío a la nube (s)", "number"],
   ["umbralTempMax", "Temp. máxima (°C)", "number"],
@@ -45,20 +47,27 @@ export default function Dispositivos({ dispositivos, esAdmin }) {
   return (
     <>
       {token && (
-        <div className="tarjeta seccion">
-          <h3>Token de {token.id} (cópialo ahora: no se vuelve a mostrar)</h3>
+        <div className="tarjeta aviso">
+          <div className="tarjeta-titulo"><h2><Icono nombre="llave" />Token de {token.id}</h2></div>
+          <p>Cópialo ahora: <b>no se vuelve a mostrar</b>.</p>
           <div className="token">{token.token}</div>
           <p className="muted">Pégalo en <code>raspberry/.env</code> como <code>DEVICE_TOKEN=...</code> y ejecuta <code>docker compose up -d</code>.</p>
-          <button onClick={() => setToken(null)}>Listo</button>
+          <div className="fila">
+            <button className="primario" onClick={() => navigator.clipboard?.writeText(token.token)}>Copiar</button>
+            <button onClick={() => setToken(null)}>Listo</button>
+          </div>
         </div>
       )}
       {error && <p className="error">{error}</p>}
 
       {esAdmin && (
-        <form className="tarjeta form seccion" onSubmit={crear}>
+        <form className="tarjeta seccion" onSubmit={crear}>
+          <div className="tarjeta-titulo"><h2><Icono nombre="mas" />Nuevo dispositivo</h2></div>
+          <div className="form">
           <label>Id (ej. sala-101)<input value={nuevoId} onChange={(e) => setNuevoId(e.target.value)} pattern="[a-z0-9-]{3,40}" required /></label>
           <label>Nombre<input value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} placeholder="Sala 101" /></label>
           <button className="primario">Crear dispositivo</button>
+          </div>
         </form>
       )}
 
@@ -86,13 +95,24 @@ function TarjetaDispositivo({ d, esAdmin, onRegenerar }) {
     }
   }
 
+  const online = enLinea(d);
+  const ultima = ultimaConexionMs(d);
   return (
     <form className="tarjeta seccion" onSubmit={guardar}>
-      <div className="fila" style={{ justifyContent: "space-between" }}>
-        <h3 style={{ margin: 0 }}>{d.nombre} <span className="muted">({d.id})</span></h3>
-        {esAdmin && <button type="button" onClick={onRegenerar}>Regenerar / revocar token</button>}
+      <div className="tarjeta-titulo">
+        <div className="fila">
+          <div className="kpi-icono" style={{ "--tono": `var(--${online ? "ok" : "bad"})` }}><Icono nombre="dispositivos" size={20} /></div>
+          <div>
+            <h2>{d.nombre} <span className="muted">({d.id})</span></h2>
+            <div className="fila muted">
+              <span className={`pill ${online ? "ok" : "bad"}`}><span className="punto" />{online ? "En línea" : "Desconectado"}</span>
+              {ultima ? `Último envío ${new Date(ultima).toLocaleString("es-CL")}` : "Nunca se ha conectado"}
+            </div>
+          </div>
+        </div>
+        {esAdmin && <button type="button" onClick={onRegenerar}><Icono nombre="llave" size={16} />Regenerar / revocar token</button>}
       </div>
-      <div className="form" style={{ marginTop: 10 }}>
+      <div className="form">
         {CAMPOS.map(([k, etiqueta, tipo]) => (
           <label key={k}>
             {etiqueta}

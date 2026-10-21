@@ -12,7 +12,7 @@ export const GET = handle(async (req) => {
 });
 
 export const POST = handle(async (req) => {
-  const { orgId } = await autenticarUsuario(req, { soloAdmin: true });
+  const usuario = await autenticarUsuario(req, { soloAdmin: true });
   const { id, nombre } = await readJson(req);
-  return json(await crearDispositivo(orgId, validarId(id), nombre), 201);
+  return json(await crearDispositivo(usuario.orgId, validarId(id), nombre, usuario), 201);
 });

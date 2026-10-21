@@ -42,7 +42,8 @@ export async function autenticarUsuario(req, { soloAdmin = false } = {}) {
   const { orgId, role } = decoded;
   if (!orgId || !role) throw new HttpError(403, "Usuario sin organización asignada");
   if (soloAdmin && role !== "admin") throw new HttpError(403, "Requiere rol administrador");
-  return { uid: decoded.uid, email: decoded.email, orgId, role };
+  const ip = (req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || null; // para la auditoría
+  return { uid: decoded.uid, email: decoded.email, orgId, role, ip };
 }
 
 export const validarId = (id) => {

@@ -25,6 +25,11 @@
       "collectionGroup": "alertas",
       "fieldPath": "mensaje",
       "indexes": []
+    },
+    {
+      "collectionGroup": "auditoria",
+      "fieldPath": "detalle",
+      "indexes": []
     }
   ]
 }

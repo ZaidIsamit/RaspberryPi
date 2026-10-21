@@ -1,9 +1,12 @@
 "use client";
 import { useState } from "react";
 import Grafico from "@/components/Grafico";
+import Icono from "@/components/Iconos";
+import Kpi from "@/components/Kpi";
 import { api } from "@/lib/firebaseClient";
+import { aLocal } from "@/lib/formato";
 
-const aLocal = (d) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+const RAPIDOS = [["Última hora", 1], ["24 horas", 24], ["7 días", 168]];
 
 export default function Historico({ dispositivo }) {
   const ahora = new Date();
@@ -13,14 +16,14 @@ export default function Historico({ dispositivo }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  async function consultar() {
+  async function consultar(d = desde, h = hasta) {
     setError("");
     setCargando(true);
     try {
       const qs = new URLSearchParams({
         deviceId: dispositivo.id,
-        desde: new Date(desde).toISOString(),
-        hasta: new Date(hasta).toISOString(),
+        desde: new Date(d).toISOString(),
+        hasta: new Date(h).toISOString(),
       });
       setDatos((await api(`/api/v1/readings?${qs}`)).lecturas);
     } catch (e) {
@@ -28,6 +31,14 @@ export default function Historico({ dispositivo }) {
     } finally {
       setCargando(false);
     }
+  }
+
+  function rapido(horas) {
+    const h = aLocal(new Date());
+    const d = aLocal(new Date(Date.now() - horas * 3600_000));
+    setDesde(d);
+    setHasta(h);
+    consultar(d, h);
   }
 
   const prom = (k) => {
@@ -38,28 +49,39 @@ export default function Historico({ dispositivo }) {
 
   return (
     <>
-      <div className="tarjeta form">
+      <div className="tarjeta filtros">
         <label>Desde<input type="datetime-local" value={desde} onChange={(e) => setDesde(e.target.value)} /></label>
         <label>Hasta<input type="datetime-local" value={hasta} onChange={(e) => setHasta(e.target.value)} /></label>
-        <button className="primario" onClick={consultar} disabled={cargando}>{cargando ? "Consultando…" : "Consultar"}</button>
+        <button className="primario" onClick={() => consultar()} disabled={cargando}>
+          <Icono nombre="recargar" size={16} />{cargando ? "Consultando…" : "Consultar"}
+        </button>
+        <div className="segmentos">
+          {RAPIDOS.map(([t, h]) => <button key={h} onClick={() => rapido(h)} disabled={cargando}>{t}</button>)}
+        </div>
       </div>
       {error && <p className="error">{error}</p>}
+      {!datos && !error && (
+        <div className="tarjeta vacio seccion">
+          <Icono nombre="historico" size={32} />
+          <p>Elige un rango y pulsa <b>Consultar</b>, o usa un atajo.</p>
+        </div>
+      )}
       {datos && (
         <>
-          <div className="grid seccion">
-            <div className="tarjeta"><h3>Minutos registrados</h3><div className="valor">{datos.length}</div></div>
-            <div className="tarjeta"><h3>Temp. promedio</h3><div className="valor">{prom("t")} °C</div></div>
-            <div className="tarjeta"><h3>Humedad promedio</h3><div className="valor">{prom("h")} %</div></div>
-            <div className="tarjeta"><h3>Uso de la sala</h3>
-              <div className="valor">{datos.length ? Math.round((100 * minOcupados) / datos.length) : 0}%</div>
-              <div className="muted">{minOcupados} min ocupada</div>
-            </div>
-            <div className="tarjeta"><h3>Confort promedio</h3><div className="valor">{prom("conf")}</div></div>
+          <div className="kpis seccion">
+            <Kpi icono="reloj" titulo="Minutos registrados" valor={datos.length} />
+            <Kpi icono="temperatura" tono="warn" titulo="Temp. promedio" valor={prom("t")} unidad="°C" />
+            <Kpi icono="humedad" tono="info" titulo="Humedad promedio" valor={prom("h")} unidad="%" />
+            <Kpi icono="presencia" tono="accent" titulo="Uso de la sala"
+              valor={datos.length ? Math.round((100 * minOcupados) / datos.length) : 0} unidad="%" sub={`${minOcupados} min ocupada`} />
+            <Kpi icono="confort" tono="ok" titulo="Confort promedio" valor={prom("conf")} unidad="/100" />
           </div>
           <section className="tarjeta seccion">
-            <h3>Histórico</h3>
-            {datos.length ? <Grafico datos={datos} conFecha /> : <p className="muted">No hay datos en ese rango.</p>}
-            <p className="muted">Esta consulta costó {datos.length} lecturas de Firestore.</p>
+            <div className="tarjeta-titulo">
+              <h2><Icono nombre="historico" />Histórico</h2>
+              <span className="muted">Esta consulta costó {datos.length} lecturas de Firestore</span>
+            </div>
+            {datos.length ? <Grafico datos={datos} conFecha /> : <div className="vacio">No hay datos en ese rango.</div>}
           </section>
         </>
       )}

@@ -5,7 +5,7 @@ import { actualizarConfig } from "@/lib/services/devices";
 import { handle, json, readJson } from "@/lib/services/http";
 
 export const PUT = handle(async (req, ctx) => {
-  const { orgId } = await autenticarUsuario(req, { soloAdmin: true });
+  const usuario = await autenticarUsuario(req, { soloAdmin: true });
   const { id } = await ctx.params;
-  return json({ config: await actualizarConfig(orgId, validarId(id), await readJson(req)) });
+  return json({ config: await actualizarConfig(usuario.orgId, validarId(id), await readJson(req), usuario) });
 });
