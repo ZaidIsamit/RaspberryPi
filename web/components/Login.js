@@ -1,7 +1,7 @@
 "use client";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
-import { api, fb } from "@/lib/firebaseClient";
+import { fb } from "@/lib/firebaseClient";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -18,10 +18,7 @@ export default function Login() {
     } catch {
       setError("Correo o contraseña incorrectos");
       setCargando(false);
-      return;
     }
-    // Queda registrado en la auditoría de la organización (si falla, no impide entrar)
-    await api("/api/v1/audit", { method: "POST", body: { accion: "LOGIN" } }).catch(() => {});
   }
 
   return (

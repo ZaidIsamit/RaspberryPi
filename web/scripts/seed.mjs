@@ -21,9 +21,9 @@ const ORGS = [
   { id: "campus-sur", nombre: "Campus Sur", dispositivo: { id: "sala-201", nombre: "Sala 201 (demo aislamiento)" } },
 ];
 const USUARIOS = [
-  { email: "admin@campus-norte.cl", password: "Admin.2026!", orgId: "campus-norte", role: "admin" },
-  { email: "consulta@campus-norte.cl", password: "Consulta.2026!", orgId: "campus-norte", role: "viewer" },
-  { email: "admin@campus-sur.cl", password: "Admin.2026!", orgId: "campus-sur", role: "admin" },
+  { email: "admin.norte@unab.cl", password: "Admin2026.A", orgId: "campus-norte", role: "admin" },
+  { email: "consulta.norte@unab.cl", password: "Admin2026.A", orgId: "campus-norte", role: "viewer" },
+  { email: "admin.sur@unab.cl", password: "Admin2026.A", orgId: "campus-sur", role: "admin" },
 ];
 const CONFIG = {
   intervaloClimaSeg: 10, intervaloEnvioSeg: 60, sensorClimaActivo: true, sensorMovimientoActivo: true,

@@ -10,8 +10,8 @@ export const CAMPOS = [
   ["umbralTempMin", "Temp. mínima (°C)", "number"],
   ["umbralHumMax", "Humedad máxima (%)", "number"],
   ["umbralOcupacion", "Umbral ocupación (0-1)", "number"],
-  ["horaInicio", "Horario desde (h)", "number"],
-  ["horaFin", "Horario hasta (h)", "number"],
+  ["horaInicio", "Horario de uso desde (h)", "number"],
+  ["horaFin", "Horario de uso hasta (h)", "number"],
   ["sensorClimaActivo", "Sensor clima activo", "checkbox"],
   ["sensorMovimientoActivo", "Sensor movimiento activo", "checkbox"],
 ];
@@ -123,6 +123,10 @@ function TarjetaDispositivo({ d, esAdmin, onRegenerar }) {
         ))}
         {esAdmin && <button className="primario">Guardar configuración</button>}
       </div>
+      <p className="muted">
+        Los sensores miden 24 h, los 7 días. El horario de uso solo define cuándo una presencia genera la alerta
+        &quot;fuera de horario&quot;; no apaga los sensores.
+      </p>
       {!esAdmin && <p className="muted">Rol de consulta: solo lectura.</p>}
       {msg && <p className="muted">{msg}</p>}
     </form>

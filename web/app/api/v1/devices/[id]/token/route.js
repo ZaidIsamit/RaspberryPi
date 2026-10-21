@@ -4,7 +4,7 @@ import { regenerarToken } from "@/lib/services/devices";
 import { handle, json } from "@/lib/services/http";
 
 export const POST = handle(async (req, ctx) => {
-  const usuario = await autenticarUsuario(req, { soloAdmin: true });
+  const { orgId } = await autenticarUsuario(req, { soloAdmin: true });
   const { id } = await ctx.params;
-  return json(await regenerarToken(usuario.orgId, validarId(id), usuario));
+  return json(await regenerarToken(orgId, validarId(id)));
 });

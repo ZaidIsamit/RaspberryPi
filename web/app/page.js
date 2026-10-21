@@ -3,17 +3,16 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Alertas from "@/components/Alertas";
-import Auditoria from "@/components/Auditoria";
 import Dispositivos from "@/components/Dispositivos";
 import EnVivo from "@/components/EnVivo";
 import Historico from "@/components/Historico";
 import Icono from "@/components/Iconos";
 import Login from "@/components/Login";
 import Registros from "@/components/Registros";
-import { api, fb } from "@/lib/firebaseClient";
+import { fb } from "@/lib/firebaseClient";
 import { enLinea } from "@/lib/formato";
 
-// Menú lateral. `disp`: la sección trabaja sobre el dispositivo seleccionado. `admin`: solo rol admin.
+// Menú lateral. `disp`: la sección trabaja sobre el dispositivo seleccionado.
 const MENU = [
   { grupo: "Monitoreo", items: [
     { k: "vivo", t: "Panel en vivo", icono: "vivo", desc: "Datos en tiempo real de la sala", disp: true },
@@ -22,7 +21,6 @@ const MENU = [
   { grupo: "Registros", items: [
     { k: "registros", t: "Todos los registros", icono: "registros", desc: "Cada lectura por minuto guardada en Firestore", disp: true },
     { k: "alertas", t: "Alertas", icono: "alertas", desc: "Umbrales superados y eventos fuera de horario", disp: true },
-    { k: "auditoria", t: "Auditoría", icono: "auditoria", desc: "Quién hizo qué y cuándo en la organización", admin: true },
   ] },
   { grupo: "Administración", items: [
     { k: "dispositivos", t: "Dispositivos", icono: "dispositivos", desc: "Alta, token y configuración remota" },
@@ -72,7 +70,6 @@ export default function Home() {
   }
 
   async function salir() {
-    await api("/api/v1/audit", { method: "POST", body: { accion: "LOGOUT" } }).catch(() => {});
     await signOut(fb().auth);
   }
 
@@ -89,7 +86,7 @@ export default function Home() {
     );
 
   const esAdmin = sesion.role === "admin";
-  const actual = SECCIONES.find((s) => s.k === seccion && (!s.admin || esAdmin)) || SECCIONES[0];
+  const actual = SECCIONES.find((s) => s.k === seccion) || SECCIONES[0];
   const dispositivo = dispositivos.find((d) => d.id === sel);
   const online = dispositivo && enLinea(dispositivo);
 
@@ -109,7 +106,7 @@ export default function Home() {
           {MENU.map((g) => (
             <div key={g.grupo}>
               <div className="nav-grupo">{g.grupo}</div>
-              {g.items.filter((s) => !s.admin || esAdmin).map((s) => (
+              {g.items.map((s) => (
                 <button key={s.k} className={`nav-item ${actual.k === s.k ? "activo" : ""}`} onClick={() => ir(s.k)}>
                   <Icono nombre={s.icono} />
                   <span>{s.t}</span>
@@ -162,7 +159,6 @@ export default function Home() {
               {actual.k === "historico" && <Historico dispositivo={dispositivo} />}
               {actual.k === "registros" && <Registros dispositivo={dispositivo} />}
               {actual.k === "alertas" && <Alertas orgId={sesion.orgId} dispositivo={dispositivo} />}
-              {actual.k === "auditoria" && <Auditoria />}
               {actual.k === "dispositivos" && <Dispositivos dispositivos={dispositivos} esAdmin={esAdmin} />}
             </>
           )}

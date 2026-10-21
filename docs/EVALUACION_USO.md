@@ -6,6 +6,7 @@
 | Variable | Valor |
 |---|---|
 | Dispositivos | 1 Raspberry Pi 3 (Sala 101) |
+| Operación | **Continua, 24 h × 7 días** (sin horario de apagado): 1.440 minutos/día, 10.080 minutos/semana |
 | Sensores | DHT (temp./humedad) cada 10 s · PIR muestreado 10 veces/s, resumido 1/s |
 | Agregación | 1 documento por minuto en el dispositivo |
 | Envío a la nube | 1 lote cada 60 s (configurable) |

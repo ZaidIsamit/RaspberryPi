@@ -7,6 +7,7 @@ Problema: saber, por sala, **si está ocupada y en qué condiciones** para gesti
 - **Índice de confort (0-100)**: 100 dentro de 20-24 °C y 40-60 % HR; resta 12 pts por °C y 1,5 pts por punto de humedad fuera de rango.
 - **Estado combinado**: `Vacía`, `Ocupada - confortable`, `Ocupada - calurosa`, `Ocupada - fría`, `Ocupada - húmeda (ventilar)`.
 - **Alertas**: temperatura alta/baja, humedad alta y **presencia fuera de horario** (combina PIR + reloj).
+- **Operación 24/7**: los sensores miden de forma continua todos los días; el horario configurable (por defecto 8:00–22:00) **no apaga nada**, solo define cuándo una presencia se considera "fuera de horario".
 
 ## 2. Diagrama de arquitectura
 
@@ -61,7 +62,6 @@ orgs/{orgId}                                   { nombre }
                                                  ultimaLectura{...}, salud{...}, creado }
     lecturas/{minutoEpoch}                     { ts, t, tMin, tMax, h, nClima, pres, mov, ocup, conf, estado }
     alertas/{minutoEpoch-TIPO[-fin]}           { ts, tipo, estado, mensaje, valor }
-  auditoria/{autoId}                           { ts, uid, email, rol, ip, accion, deviceId, detalle }
 ```
 
 | Decisión | Justificación (consultas / volumen) |
@@ -72,9 +72,8 @@ orgs/{orgId}                                   { nombre }
 | `ultimaLectura` copiada en el documento del dispositivo | Las tarjetas "ahora" del dashboard leen **1 documento**, no consultan la colección. |
 | Nombres de campo cortos (`t`, `h`, `pres`) | Menor tamaño por documento (≈ 0,3 KB). |
 | `config` dentro del dispositivo | La API autentica y entrega la configuración con **una sola lectura**. |
-| `auditoria` por organización, solo se agregan entradas | Trazabilidad de acciones (inicio/cierre de sesión, alta de dispositivo, regeneración de token, cambio de configuración con valor anterior y nuevo). Son pocas escrituras al día; la escribe solo la API y la lee solo el rol admin a través de la API. |
 
-**Índices:** todas las consultas son de un solo campo dentro de una subcolección (`orderBy ts`, rango por `ts`), cubiertas por los índices automáticos; no se requieren índices compuestos. `firestore.indexes.json` **desactiva** la indexación de campos que nunca se consultan (`estado`, `tMin`, `tMax`, `nClima`, `mensaje`, `detalle` de auditoría) para reducir el almacenamiento de índices.
+**Índices:** todas las consultas son de un solo campo dentro de una subcolección (`orderBy ts`, rango por `ts`), cubiertas por los índices automáticos; no se requieren índices compuestos. `firestore.indexes.json` **desactiva** la indexación de campos que nunca se consultan (`estado`, `tMin`, `tMax`, `nClima`, `mensaje`) para reducir el almacenamiento de índices.
 
 ## 5. API REST (`https://TU-PROYECTO.vercel.app/api/v1`)
 
@@ -88,8 +87,6 @@ orgs/{orgId}                                   { nombre }
 | POST | `/devices/{id}/token` | Usuario **admin** | Regenerar token (revoca el anterior) |
 | PUT | `/devices/{id}/config` | Usuario **admin** | Cambiar intervalos, umbrales, activar sensores |
 | GET | `/readings?deviceId=&desde=&hasta=` | Usuario | Histórico por rango (máx. 31 días) |
-| GET | `/audit?limite=200` | Usuario **admin** | Bitácora de auditoría de su organización (máx. 500) |
-| POST | `/audit` | Usuario | Registra su inicio o cierre de sesión `{"accion":"LOGIN"\|"LOGOUT"}` |
 
 Ejemplos:
 ```bash
@@ -120,10 +117,9 @@ Códigos: `400` datos inválidos, `401` token inválido/revocado, `403` rol insu
 - **Token propio y revocable por dispositivo** (`org.device.secreto`, 192 bits aleatorios). En Firestore solo se guarda su SHA-256; la comparación es en tiempo constante. Regenerarlo revoca el anterior al instante.
 - La Raspberry **nunca** tiene credenciales de Firebase: la cuenta de servicio solo existe como variables de entorno en Vercel.
 - Usuarios con Firebase Auth (correo/contraseña) y **custom claims** `{orgId, role}`; la API verifica el ID token y el rol en cada petición de escritura.
-- **Security Rules**: el cliente solo puede leer documentos de su organización y no puede escribir nada. La colección `auditoria` no es legible desde el navegador: solo el rol admin la consulta vía API.
-- **Auditoría**: cada acción administrativa queda registrada con usuario, rol, IP, fecha y detalle (los cambios de configuración guardan el valor anterior y el nuevo).
+- **Security Rules**: el cliente solo puede leer documentos de su organización y no puede escribir nada.
 - Validación de rango, tipo y tamaño de todo lo que llega a la API (lotes ≤400 lecturas, cuerpos ≤200 KB, fechas ≤30 días atrás).
 - Secretos fuera del repositorio: `.env`, `.env.local` y JSON de cuenta de servicio en `.gitignore`.
 
 ## 7. Hardware
-Ver tabla de conexión en el README. El HC-SR501 se alimenta con 5 V pero su salida es 3,3 V (compatible con GPIO). El DHT se alimenta con 3,3 V, así su señal es de 3,3 V. No se usan sensores analógicos (no se requiere ADS1115).
+Ver tabla de conexión en [DESPLIEGUE.md](DESPLIEGUE.md#5-raspberry-pi). El HC-SR501 se alimenta con 5 V pero su salida es 3,3 V (compatible con GPIO). El DHT se alimenta con 3,3 V, así su señal es de 3,3 V. No se usan sensores analógicos (no se requiere ADS1115).
