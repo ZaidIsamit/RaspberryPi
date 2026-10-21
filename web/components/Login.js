@@ -1,7 +1,6 @@
 "use client";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
-import Icono from "@/components/Iconos";
 import { api, fb } from "@/lib/firebaseClient";
 
 export default function Login() {
@@ -29,13 +28,13 @@ export default function Login() {
     <div className="login-fondo">
       <div className="login tarjeta">
         <div className="login-marca">
-          <div className="marca-logo grande"><Icono nombre="antena" size={26} /></div>
-          <h2>Smart Campus IoT</h2>
+          <div className="migas">Infraestructura TI</div>
+          <h2>Smart Campus</h2>
           <p className="muted">Monitoreo ambiental y de ocupación de salas</p>
         </div>
         <form onSubmit={entrar}>
           <label>Correo
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="usuario@campus.cl" autoComplete="username" required />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
           </label>
           <label>Contraseña
             <input type="password" value={clave} onChange={(e) => setClave(e.target.value)} autoComplete="current-password" required />
@@ -43,7 +42,7 @@ export default function Login() {
           {error && <span className="error">{error}</span>}
           <button className="primario ancho" disabled={cargando}>{cargando ? "Ingresando…" : "Ingresar"}</button>
         </form>
-        <p className="login-pie muted"><Icono nombre="auditoria" size={14} /> Acceso por organización · Firebase Authentication</p>
+        <p className="login-pie muted">Ingresa con la cuenta asignada a tu organización.</p>
       </div>
     </div>
   );

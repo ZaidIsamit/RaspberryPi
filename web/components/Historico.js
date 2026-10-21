@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Grafico from "@/components/Grafico";
-import Icono from "@/components/Iconos";
 import Kpi from "@/components/Kpi";
 import { api } from "@/lib/firebaseClient";
 import { aLocal } from "@/lib/formato";
@@ -53,7 +52,7 @@ export default function Historico({ dispositivo }) {
         <label>Desde<input type="datetime-local" value={desde} onChange={(e) => setDesde(e.target.value)} /></label>
         <label>Hasta<input type="datetime-local" value={hasta} onChange={(e) => setHasta(e.target.value)} /></label>
         <button className="primario" onClick={() => consultar()} disabled={cargando}>
-          <Icono nombre="recargar" size={16} />{cargando ? "Consultando…" : "Consultar"}
+          {cargando ? "Consultando…" : "Consultar"}
         </button>
         <div className="segmentos">
           {RAPIDOS.map(([t, h]) => <button key={h} onClick={() => rapido(h)} disabled={cargando}>{t}</button>)}
@@ -62,23 +61,22 @@ export default function Historico({ dispositivo }) {
       {error && <p className="error">{error}</p>}
       {!datos && !error && (
         <div className="tarjeta vacio seccion">
-          <Icono nombre="historico" size={32} />
           <p>Elige un rango y pulsa <b>Consultar</b>, o usa un atajo.</p>
         </div>
       )}
       {datos && (
         <>
           <div className="kpis seccion">
-            <Kpi icono="reloj" titulo="Minutos registrados" valor={datos.length} />
-            <Kpi icono="temperatura" tono="warn" titulo="Temp. promedio" valor={prom("t")} unidad="°C" />
-            <Kpi icono="humedad" tono="info" titulo="Humedad promedio" valor={prom("h")} unidad="%" />
-            <Kpi icono="presencia" tono="accent" titulo="Uso de la sala"
+            <Kpi titulo="Minutos registrados" valor={datos.length} />
+            <Kpi titulo="Temp. promedio" valor={prom("t")} unidad="°C" />
+            <Kpi titulo="Humedad promedio" valor={prom("h")} unidad="%" />
+            <Kpi titulo="Uso de la sala"
               valor={datos.length ? Math.round((100 * minOcupados) / datos.length) : 0} unidad="%" sub={`${minOcupados} min ocupada`} />
-            <Kpi icono="confort" tono="ok" titulo="Confort promedio" valor={prom("conf")} unidad="/100" />
+            <Kpi titulo="Confort promedio" valor={prom("conf")} unidad="/100" />
           </div>
           <section className="tarjeta seccion">
             <div className="tarjeta-titulo">
-              <h2><Icono nombre="historico" />Histórico</h2>
+              <h2>Histórico</h2>
               <span className="muted">Esta consulta costó {datos.length} lecturas de Firestore</span>
             </div>
             {datos.length ? <Grafico datos={datos} conFecha /> : <div className="vacio">No hay datos en ese rango.</div>}

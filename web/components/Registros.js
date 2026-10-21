@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import Icono from "@/components/Iconos";
 import { api } from "@/lib/firebaseClient";
 import { aLocal, descargarCsv, fechaHora } from "@/lib/formato";
 
@@ -66,15 +65,15 @@ export default function Registros({ dispositivo }) {
           </select>
         </label>
         <button className="primario" onClick={consultar} disabled={cargando}>
-          <Icono nombre="recargar" size={16} />{cargando ? "Consultando…" : "Consultar"}
+          {cargando ? "Consultando…" : "Consultar"}
         </button>
-        <button onClick={exportar} disabled={!filas.length}><Icono nombre="descargar" size={16} />Exportar CSV</button>
+        <button onClick={exportar} disabled={!filas.length}>Exportar CSV</button>
       </div>
       {error && <p className="error">{error}</p>}
 
       <section className="tarjeta seccion sin-padding">
         <div className="tabla-cabecera">
-          <h2><Icono nombre="registros" />{datos ? `${filas.length} registros` : "Registros"}</h2>
+          <h2>{datos ? `${filas.length} registros` : "Registros"}</h2>
           {datos && (
             <span className="muted">
               Consulta de {datos.length} documentos de Firestore{datos.length >= LIMITE_API && " (tope alcanzado: acorta el rango)"}
@@ -82,7 +81,7 @@ export default function Registros({ dispositivo }) {
           )}
         </div>
         {!datos ? (
-          <div className="vacio">{cargando ? <><span className="spinner" /> Cargando registros…</> : "Sin datos."}</div>
+          <div className="vacio">{cargando ? <>Cargando registros…</> : "Sin datos."}</div>
         ) : !filas.length ? (
           <div className="vacio">No hay registros en ese rango.</div>
         ) : (
@@ -105,7 +104,7 @@ export default function Registros({ dispositivo }) {
                       <td className="num">{v(d.h, " %")}</td>
                       <td className="num">{d.pres == null ? "—" : `${Math.round(d.pres * 100)} %`}</td>
                       <td className="num">{d.mov ?? 0}</td>
-                      <td><span className={`pill ${d.ocup ? "accent" : "neutro"}`}>{d.ocup ? "Ocupada" : "Libre"}</span></td>
+                      <td><span className={`estado ${d.ocup ? "accent" : "neutro"}`}>{d.ocup ? "Ocupada" : "Libre"}</span></td>
                       <td className="num">{v(d.conf)}</td>
                       <td className="muted">{d.estado}</td>
                     </tr>

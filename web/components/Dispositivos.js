@@ -1,8 +1,7 @@
 "use client";
 import { useState } from "react";
-import Icono from "@/components/Iconos";
 import { api } from "@/lib/firebaseClient";
-import { enLinea, ultimaConexionMs } from "@/lib/formato";
+import { enLinea, fechaHora, ultimaConexionMs } from "@/lib/formato";
 
 export const CAMPOS = [
   ["intervaloClimaSeg", "Intervalo lectura clima (s)", "number"],
@@ -48,7 +47,7 @@ export default function Dispositivos({ dispositivos, esAdmin }) {
     <>
       {token && (
         <div className="tarjeta aviso">
-          <div className="tarjeta-titulo"><h2><Icono nombre="llave" />Token de {token.id}</h2></div>
+          <div className="tarjeta-titulo"><h2>Token de {token.id}</h2></div>
           <p>Cópialo ahora: <b>no se vuelve a mostrar</b>.</p>
           <div className="token">{token.token}</div>
           <p className="muted">Pégalo en <code>raspberry/.env</code> como <code>DEVICE_TOKEN=...</code> y ejecuta <code>docker compose up -d</code>.</p>
@@ -62,7 +61,7 @@ export default function Dispositivos({ dispositivos, esAdmin }) {
 
       {esAdmin && (
         <form className="tarjeta seccion" onSubmit={crear}>
-          <div className="tarjeta-titulo"><h2><Icono nombre="mas" />Nuevo dispositivo</h2></div>
+          <div className="tarjeta-titulo"><h2>Nuevo dispositivo</h2></div>
           <div className="form">
           <label>Id (ej. sala-101)<input value={nuevoId} onChange={(e) => setNuevoId(e.target.value)} pattern="[a-z0-9-]{3,40}" required /></label>
           <label>Nombre<input value={nuevoNombre} onChange={(e) => setNuevoNombre(e.target.value)} placeholder="Sala 101" /></label>
@@ -100,17 +99,14 @@ function TarjetaDispositivo({ d, esAdmin, onRegenerar }) {
   return (
     <form className="tarjeta seccion" onSubmit={guardar}>
       <div className="tarjeta-titulo">
-        <div className="fila">
-          <div className="kpi-icono" style={{ "--tono": `var(--${online ? "ok" : "bad"})` }}><Icono nombre="dispositivos" size={20} /></div>
-          <div>
-            <h2>{d.nombre} <span className="muted">({d.id})</span></h2>
-            <div className="fila muted">
-              <span className={`pill ${online ? "ok" : "bad"}`}><span className="punto" />{online ? "En línea" : "Desconectado"}</span>
-              {ultima ? `Último envío ${new Date(ultima).toLocaleString("es-CL")}` : "Nunca se ha conectado"}
-            </div>
+        <div>
+          <h2>{d.nombre} <span className="muted mono">{d.id}</span></h2>
+          <div className="fila muted">
+            <span className={`estado ${online ? "ok" : "bad"}`}>{online ? "En línea" : "Desconectado"}</span>
+            {ultima ? `Último envío ${fechaHora(ultima)}` : "Nunca se ha conectado"}
           </div>
         </div>
-        {esAdmin && <button type="button" onClick={onRegenerar}><Icono nombre="llave" size={16} />Regenerar / revocar token</button>}
+        {esAdmin && <button type="button" onClick={onRegenerar}>Regenerar / revocar token</button>}
       </div>
       <div className="form">
         {CAMPOS.map(([k, etiqueta, tipo]) => (

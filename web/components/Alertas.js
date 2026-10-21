@@ -1,7 +1,6 @@
 "use client";
 import { collection, getDocs, limit, orderBy, query } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
-import Icono from "@/components/Iconos";
 import Kpi from "@/components/Kpi";
 import { fb } from "@/lib/firebaseClient";
 import { descargarCsv, fechaHora } from "@/lib/formato";
@@ -57,10 +56,10 @@ export default function Alertas({ orgId, dispositivo }) {
   return (
     <>
       <div className="kpis">
-        <Kpi icono="alertas" titulo="Eventos cargados" valor={alertas ? alertas.length : "—"} sub={`Últimos ${LIMITE} como máximo`} />
-        <Kpi icono="alertas" tono="warn" titulo="Alertas disparadas" valor={alertas ? cuenta((a) => a.estado === "activa") : "—"} />
-        <Kpi icono="auditoria" tono="ok" titulo="Resueltas" valor={alertas ? cuenta((a) => a.estado === "resuelta") : "—"} />
-        <Kpi icono="filtro" tono="info" titulo="Tipo más frecuente"
+        <Kpi titulo="Eventos cargados" valor={alertas ? alertas.length : "—"} sub={`Últimos ${LIMITE} como máximo`} />
+        <Kpi titulo="Alertas disparadas" valor={alertas ? cuenta((a) => a.estado === "activa") : "—"} />
+        <Kpi titulo="Resueltas" valor={alertas ? cuenta((a) => a.estado === "resuelta") : "—"} />
+        <Kpi titulo="Tipo más frecuente"
           valor={masFrecuente?.[1] ? TIPOS_ALERTA[masFrecuente[0]] : "—"} sub={masFrecuente?.[1] ? `${masFrecuente[1]} veces` : ""} />
       </div>
 
@@ -78,15 +77,15 @@ export default function Alertas({ orgId, dispositivo }) {
             <option value="resuelta">Resuelta (volvió a la normalidad)</option>
           </select>
         </label>
-        <button className="primario" onClick={cargar} disabled={cargando}><Icono nombre="recargar" size={16} />{cargando ? "Cargando…" : "Actualizar"}</button>
-        <button onClick={exportar} disabled={!filas.length}><Icono nombre="descargar" size={16} />Exportar CSV</button>
+        <button className="primario" onClick={cargar} disabled={cargando}>{cargando ? "Cargando…" : "Actualizar"}</button>
+        <button onClick={exportar} disabled={!filas.length}>Exportar CSV</button>
       </div>
       {error && <p className="error">{error}</p>}
 
       <section className="tarjeta seccion sin-padding">
-        <div className="tabla-cabecera"><h2><Icono nombre="alertas" />{filas.length} eventos</h2></div>
+        <div className="tabla-cabecera"><h2>{filas.length} eventos</h2></div>
         {!alertas ? (
-          <div className="vacio">{cargando ? <><span className="spinner" /> Cargando alertas…</> : "Sin datos."}</div>
+          <div className="vacio">{cargando ? <>Cargando alertas…</> : "Sin datos."}</div>
         ) : !filas.length ? (
           <div className="vacio">No hay alertas con esos filtros.</div>
         ) : (
@@ -98,7 +97,7 @@ export default function Alertas({ orgId, dispositivo }) {
                   <tr key={a.id}>
                     <td>{fechaHora(a.ts)}</td>
                     <td>{TIPOS_ALERTA[a.tipo] || a.tipo}</td>
-                    <td><span className={`pill ${a.estado === "activa" ? "warn" : "ok"}`}>{a.estado === "activa" ? "Activa" : "Resuelta"}</span></td>
+                    <td><span className={`estado ${a.estado === "activa" ? "warn" : "ok"}`}>{a.estado === "activa" ? "Activa" : "Resuelta"}</span></td>
                     <td className="ajustar">{a.mensaje}</td>
                     <td className="num">{a.valor ?? "—"}</td>
                   </tr>

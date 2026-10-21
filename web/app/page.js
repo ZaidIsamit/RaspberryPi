@@ -28,7 +28,7 @@ const MENU = [
     { k: "dispositivos", t: "Dispositivos", icono: "dispositivos", desc: "Alta, token y configuración remota" },
   ] },
 ];
-const SECCIONES = MENU.flatMap((g) => g.items);
+const SECCIONES = MENU.flatMap((g) => g.items.map((s) => ({ ...s, grupo: g.grupo })));
 
 export default function Home() {
   const [sesion, setSesion] = useState(undefined); // undefined = cargando, null = sin sesión
@@ -76,14 +76,14 @@ export default function Home() {
     await signOut(fb().auth);
   }
 
-  if (sesion === undefined) return <div className="cargando"><span className="spinner" /> Cargando…</div>;
+  if (sesion === undefined) return <div className="cargando">Cargando…</div>;
   if (sesion === null) return <Login />;
   if (!sesion.orgId)
     return (
       <div className="login-fondo">
         <div className="login tarjeta">
           <p className="error">Tu usuario no tiene organización asignada. Pide al administrador que ejecute el seed.</p>
-          <button onClick={salir}><Icono nombre="salir" /> Salir</button>
+          <button onClick={salir}>Salir</button>
         </div>
       </div>
     );
@@ -98,8 +98,8 @@ export default function Home() {
       {menuAbierto && <div className="velo" onClick={() => setMenuAbierto(false)} />}
       <aside className={`sidebar ${menuAbierto ? "abierto" : ""}`}>
         <div className="marca">
-          <div className="marca-logo"><Icono nombre="antena" size={20} /></div>
-          <div><b>Smart Campus</b><small>Monitoreo IoT de salas</small></div>
+          <div className="marca-sello" />
+          <div><b>Smart Campus</b><small>Infraestructura TI · Monitoreo de salas</small></div>
           <button className="btn-icono solo-movil" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú">
             <Icono nombre="cerrar" />
           </button>
@@ -122,13 +122,9 @@ export default function Home() {
 
         <div className="sidebar-pie">
           <div className="usuario">
-            <div className="avatar">{sesion.email?.[0]?.toUpperCase()}</div>
-            <div className="usuario-datos">
-              <div className="usuario-email" title={sesion.email}>{sesion.email}</div>
-              <div className="usuario-meta">
-                {sesion.orgId} · <span className={`rol ${esAdmin ? "admin" : ""}`}>{esAdmin ? "Administrador" : "Consulta"}</span>
-              </div>
-            </div>
+            <div className="usuario-email" title={sesion.email}>{sesion.email}</div>
+            <div className="usuario-meta">Organización {sesion.orgId}</div>
+            <div className="usuario-meta">Rol: {esAdmin ? "Administrador" : "Consulta (solo lectura)"}</div>
           </div>
           <button className="nav-item" onClick={salir}><Icono nombre="salir" /><span>Cerrar sesión</span></button>
         </div>
@@ -140,12 +136,13 @@ export default function Home() {
             <Icono nombre="menu" />
           </button>
           <div className="topbar-titulo">
+            <div className="migas">{actual.grupo}</div>
             <h1>{actual.t}</h1>
             <p>{actual.desc}</p>
           </div>
           {actual.disp && dispositivos.length > 0 && (
             <div className="topbar-acciones">
-              <span className={`pill ${online ? "ok" : "bad"}`}><span className="punto" />{online ? "En línea" : "Desconectado"}</span>
+              <span className={`estado ${online ? "ok" : "bad"}`}>{online ? "En línea" : "Desconectado"}</span>
               <select value={sel} onChange={(e) => setSel(e.target.value)} aria-label="Dispositivo">
                 {dispositivos.map((d) => <option key={d.id} value={d.id}>{d.nombre || d.id}</option>)}
               </select>
@@ -156,7 +153,6 @@ export default function Home() {
         <main className="contenido">
           {actual.disp && !dispositivo ? (
             <div className="tarjeta vacio">
-              <Icono nombre="dispositivos" size={32} />
               <p>No hay dispositivos todavía.</p>
               {esAdmin && <button className="primario" onClick={() => ir("dispositivos")}>Crear un dispositivo</button>}
             </div>

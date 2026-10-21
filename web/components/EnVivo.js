@@ -2,10 +2,9 @@
 import { collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import Grafico from "@/components/Grafico";
-import Icono from "@/components/Iconos";
 import Kpi from "@/components/Kpi";
 import { fb } from "@/lib/firebaseClient";
-import { enLinea, ultimaConexionMs } from "@/lib/formato";
+import { enLinea, fechaHora, hora, ultimaConexionMs } from "@/lib/formato";
 
 export default function EnVivo({ orgId, dispositivo }) {
   const [lecturas, setLecturas] = useState([]);
@@ -32,29 +31,29 @@ export default function EnVivo({ orgId, dispositivo }) {
   return (
     <>
       <div className="kpis">
-        <Kpi icono="conexion" tono={online ? "ok" : "bad"} titulo="Conexión"
+        <Kpi titulo="Conexión" tono={online ? "ok" : "bad"}
           valor={online ? "En línea" : "Desconectado"}
-          sub={ultimaConexion ? `Último envío ${new Date(ultimaConexion).toLocaleTimeString("es-CL")}` : "Nunca"} />
-        <Kpi icono="temperatura" tono={tempFuera ? "bad" : "warn"} titulo="Temperatura" valor={fmt(u?.t)} unidad="°C"
+          sub={ultimaConexion ? `Último envío ${hora(ultimaConexion)}` : "Nunca"} />
+        <Kpi titulo="Temperatura" tono={tempFuera ? "bad" : undefined} valor={fmt(u?.t)} unidad="°C"
           sub={cfg.umbralTempMin != null ? `Rango ${cfg.umbralTempMin}–${cfg.umbralTempMax} °C` : ""} />
-        <Kpi icono="humedad" tono="info" titulo="Humedad" valor={fmt(u?.h)} unidad="%"
+        <Kpi titulo="Humedad" valor={fmt(u?.h)} unidad="%"
           sub={cfg.umbralHumMax != null ? `Máx. ${cfg.umbralHumMax} %` : ""} />
-        <Kpi icono="presencia" tono="accent" titulo="Estado de la sala" valor={u?.estado ?? "—"}
+        <Kpi titulo="Estado de la sala" valor={u?.estado ?? "—"}
           sub={`Presencia ${u?.pres == null ? "—" : `${Math.round(u.pres * 100)} % del minuto`}`} />
-        <Kpi icono="confort" tono="ok" titulo="Índice de confort" valor={u?.conf ?? "—"} unidad="/100" />
+        <Kpi titulo="Índice de confort" valor={u?.conf ?? "—"} unidad="/100" />
       </div>
 
       <section className="tarjeta seccion">
         <div className="tarjeta-titulo">
-          <h2><Icono nombre="historico" />Última hora</h2>
-          <span className="pill ok"><span className="punto pulso" />Tiempo real</span>
+          <h2>Última hora</h2>
+          <span className="muted">Se actualiza en tiempo real</span>
         </div>
         {lecturas.length ? <Grafico datos={lecturas} /> : <div className="vacio">Esperando datos del dispositivo…</div>}
       </section>
 
       <div className="grid-2 seccion">
         <section className="tarjeta">
-          <div className="tarjeta-titulo"><h2><Icono nombre="servidor" />Microservicios en la Raspberry Pi</h2></div>
+          <div className="tarjeta-titulo"><h2>Microservicios en la Raspberry Pi</h2></div>
           {salud?.servicios ? (
             <>
               <div className="tabla-wrap">
@@ -63,7 +62,7 @@ export default function EnVivo({ orgId, dispositivo }) {
                     {Object.entries(salud.servicios).map(([nombre, s]) => (
                       <tr key={nombre}>
                         <td><code>{nombre}</code></td>
-                        <td><span className={`pill ${s.ok ? "ok" : "bad"}`}><span className="punto" />{s.ok ? "OK" : "Falla"}</span></td>
+                        <td><span className={`estado ${s.ok ? "ok" : "bad"}`}>{s.ok ? "OK" : "Falla"}</span></td>
                         <td className="muted">{s.error || (s.pendientes != null ? `${s.pendientes} en buffer` : "")}</td>
                       </tr>
                     ))}
@@ -80,15 +79,15 @@ export default function EnVivo({ orgId, dispositivo }) {
           ) : <div className="vacio">Sin reporte de salud aún.</div>}
         </section>
         <section className="tarjeta">
-          <div className="tarjeta-titulo"><h2><Icono nombre="alertas" />Alertas recientes</h2></div>
+          <div className="tarjeta-titulo"><h2>Alertas recientes</h2></div>
           {alertas.length ? (
             <ul className="lista-alertas">
               {alertas.map((a) => (
                 <li key={a.id}>
-                  <span className={`pill ${a.estado === "activa" ? "warn" : "ok"}`}>{a.estado === "activa" ? "Activa" : "Resuelta"}</span>
+                  <span className={`estado ${a.estado === "activa" ? "warn" : "ok"}`}>{a.estado === "activa" ? "Activa" : "Resuelta"}</span>
                   <div>
                     <div>{a.mensaje}</div>
-                    <div className="muted">{a.ts?.toDate?.().toLocaleString("es-CL")}</div>
+                    <div className="muted">{fechaHora(a.ts)}</div>
                   </div>
                 </li>
               ))}

@@ -1,17 +1,16 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { CAMPOS } from "@/components/Dispositivos";
-import Icono from "@/components/Iconos";
 import Kpi from "@/components/Kpi";
 import { api } from "@/lib/firebaseClient";
 import { descargarCsv, fechaHora } from "@/lib/formato";
 
 const ACCIONES = {
-  LOGIN: { t: "Inicio de sesión", tono: "info", icono: "usuario" },
-  LOGOUT: { t: "Cierre de sesión", tono: "neutro", icono: "salir" },
-  DISPOSITIVO_CREADO: { t: "Dispositivo creado", tono: "ok", icono: "mas" },
-  TOKEN_REGENERADO: { t: "Token regenerado", tono: "warn", icono: "llave" },
-  CONFIG_CAMBIADA: { t: "Configuración cambiada", tono: "accent", icono: "dispositivos" },
+  LOGIN: { t: "Inicio de sesión", tono: "info" },
+  LOGOUT: { t: "Cierre de sesión", tono: "neutro" },
+  DISPOSITIVO_CREADO: { t: "Dispositivo creado", tono: "ok" },
+  TOKEN_REGENERADO: { t: "Token regenerado", tono: "warn" },
+  CONFIG_CAMBIADA: { t: "Configuración cambiada", tono: "accent" },
 };
 const ETIQUETAS = Object.fromEntries(CAMPOS.map(([k, etiqueta]) => [k, etiqueta]));
 const valor = (x) => (typeof x === "boolean" ? (x ? "Sí" : "No") : String(x));
@@ -63,10 +62,10 @@ export default function Auditoria() {
   return (
     <>
       <div className="kpis">
-        <Kpi icono="auditoria" titulo="Eventos registrados" valor={entradas ? entradas.length : "—"} sub="Últimos 300 como máximo" />
-        <Kpi icono="reloj" tono="info" titulo="Eventos hoy" valor={entradas ? cuenta((a) => a.ts >= hoy) : "—"} />
-        <Kpi icono="dispositivos" tono="accent" titulo="Cambios de configuración" valor={entradas ? cuenta((a) => a.accion === "CONFIG_CAMBIADA") : "—"} />
-        <Kpi icono="llave" tono="warn" titulo="Tokens regenerados" valor={entradas ? cuenta((a) => a.accion === "TOKEN_REGENERADO") : "—"} />
+        <Kpi titulo="Eventos registrados" valor={entradas ? entradas.length : "—"} sub="Últimos 300 como máximo" />
+        <Kpi titulo="Eventos hoy" valor={entradas ? cuenta((a) => a.ts >= hoy) : "—"} />
+        <Kpi titulo="Cambios de configuración" valor={entradas ? cuenta((a) => a.accion === "CONFIG_CAMBIADA") : "—"} />
+        <Kpi titulo="Tokens regenerados" valor={entradas ? cuenta((a) => a.accion === "TOKEN_REGENERADO") : "—"} />
       </div>
 
       <div className="tarjeta filtros seccion">
@@ -79,18 +78,18 @@ export default function Auditoria() {
         <label className="crece">Buscar
           <input value={buscar} onChange={(e) => setBuscar(e.target.value)} placeholder="Usuario, dispositivo o detalle" />
         </label>
-        <button className="primario" onClick={cargar} disabled={cargando}><Icono nombre="recargar" size={16} />{cargando ? "Cargando…" : "Actualizar"}</button>
-        <button onClick={exportar} disabled={!filas.length}><Icono nombre="descargar" size={16} />Exportar CSV</button>
+        <button className="primario" onClick={cargar} disabled={cargando}>{cargando ? "Cargando…" : "Actualizar"}</button>
+        <button onClick={exportar} disabled={!filas.length}>Exportar CSV</button>
       </div>
       {error && <p className="error">{error}</p>}
 
       <section className="tarjeta seccion sin-padding">
         <div className="tabla-cabecera">
-          <h2><Icono nombre="auditoria" />{filas.length} eventos</h2>
+          <h2>{filas.length} eventos</h2>
           <span className="muted">Registro inalterable: se escribe solo desde la API y el navegador no puede modificarlo.</span>
         </div>
         {!entradas ? (
-          <div className="vacio">{cargando ? <><span className="spinner" /> Cargando auditoría…</> : "Sin datos."}</div>
+          <div className="vacio">{cargando ? <>Cargando auditoría…</> : "Sin datos."}</div>
         ) : !filas.length ? (
           <div className="vacio">No hay eventos con esos filtros.</div>
         ) : (
@@ -99,7 +98,7 @@ export default function Auditoria() {
               <thead><tr><th>Fecha y hora</th><th>Usuario</th><th>Acción</th><th>Dispositivo</th><th>Detalle</th><th>IP</th></tr></thead>
               <tbody>
                 {filas.map((a) => {
-                  const info = ACCIONES[a.accion] || { t: a.accion, tono: "neutro", icono: "auditoria" };
+                  const info = ACCIONES[a.accion] || { t: a.accion, tono: "neutro" };
                   return (
                     <tr key={a.id}>
                       <td>{fechaHora(a.ts)}</td>
@@ -107,7 +106,7 @@ export default function Auditoria() {
                         <div>{a.email || a.uid}</div>
                         <div className="muted">{a.rol === "admin" ? "Administrador" : "Consulta"}</div>
                       </td>
-                      <td><span className={`pill ${info.tono}`}><Icono nombre={info.icono} size={13} />{info.t}</span></td>
+                      <td><span className={`estado ${info.tono}`}>{info.t}</span></td>
                       <td>{a.deviceId || <span className="muted">—</span>}</td>
                       <td className="ajustar">{describir(a) || <span className="muted">—</span>}</td>
                       <td className="muted">{a.ip || "—"}</td>
