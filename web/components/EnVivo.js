@@ -6,14 +6,17 @@ import Kpi from "@/components/Kpi";
 import { fb } from "@/lib/firebaseClient";
 import { enLinea, fechaHora, hora, ultimaConexionMs } from "@/lib/formato";
 
-export default function EnVivo({ orgId, dispositivo }) {
+// El panel solo muestra lo más reciente; para más datos están Histórico y Todos los registros.
+const MAX_REGISTROS = 20;
+
+export default function EnVivo({ orgId, dispositivo, onIr }) {
   const [lecturas, setLecturas] = useState([]);
   const [alertas, setAlertas] = useState([]);
 
-  // Tiempo real: últimos 60 minutos (60 lecturas al abrir, luego 1 lectura por minuto nuevo)
+  // Tiempo real: últimos 20 minutos (20 lecturas al abrir, luego 1 lectura por minuto nuevo)
   useEffect(() => {
     const base = ["orgs", orgId, "devices", dispositivo.id];
-    const q1 = query(collection(fb().db, ...base, "lecturas"), orderBy("ts", "desc"), limit(60));
+    const q1 = query(collection(fb().db, ...base, "lecturas"), orderBy("ts", "desc"), limit(MAX_REGISTROS));
     const q2 = query(collection(fb().db, ...base, "alertas"), orderBy("ts", "desc"), limit(8));
     const u1 = onSnapshot(q1, (s) =>
       setLecturas(s.docs.map((d) => ({ id: d.id, ...d.data(), ts: d.data().ts.toMillis() })).reverse()));
@@ -45,10 +48,15 @@ export default function EnVivo({ orgId, dispositivo }) {
 
       <section className="tarjeta seccion">
         <div className="tarjeta-titulo">
-          <h2>Última hora</h2>
-          <span className="muted">Se actualiza en tiempo real</span>
+          <h2>Últimos {MAX_REGISTROS} registros</h2>
+          <span className="muted">Se actualiza en tiempo real · 1 registro por minuto</span>
         </div>
         {lecturas.length ? <Grafico datos={lecturas} /> : <div className="vacio">Esperando datos del dispositivo…</div>}
+        <div className="fila" style={{ marginTop: 12 }}>
+          <span className="muted">¿Necesitas más datos?</span>
+          <button type="button" onClick={() => onIr("historico")}>Ver histórico</button>
+          <button type="button" onClick={() => onIr("registros")}>Ver todos los registros</button>
+        </div>
       </section>
 
       <div className="grid-2 seccion">

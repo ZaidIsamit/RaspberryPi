@@ -24,9 +24,9 @@
 | **Total escrituras** | | **≈ 2.890** | **≈ 86.700** | **14,5 % de 20.000** |
 | Lecturas: autenticación de ingest | 1 por lote | 1.440 | | |
 | Lecturas: consulta de config | 1 cada 30 s | 2.880 | | |
-| Lecturas: dashboard en vivo | 3 usuarios × 1 h × (60 iniciales + 60 lecturas + 60 updates del dispositivo) | ~540 | | |
+| Lecturas: dashboard en vivo | 3 usuarios × 1 h × (20 iniciales + 60 lecturas + 60 updates del dispositivo) | ~420 | | |
 | Lecturas: histórico 24 h | 3 usuarios × 2 × 1.440 | 8.640 | | |
-| **Total lecturas** | | **≈ 13.500** | **≈ 405.000** | **27 % de 50.000** |
+| **Total lecturas** | | **≈ 13.400** | **≈ 401.000** | **27 % de 50.000** |
 | Almacenamiento | 1.440 × 0,6 KB | ≈ 0,86 MB | ≈ 26 MB | 1 GiB se alcanza en ≈ 3,3 años |
 | Invocaciones Vercel | 1.440 ingest + 2.880 config + ~20 web | ≈ 4.340 | ≈ 130.000 | comparar con el límite mensual del plan Hobby [citar] |
 
@@ -41,7 +41,7 @@
 | 26-oct | | | | |
 | 27-oct | | | | |
 | **Promedio** | | | | |
-| **Estimado** | 2.890 | 13.500 | 0,86 MB/día | 4.340 |
+| **Estimado** | 2.890 | 13.400 | 0,86 MB/día | 4.340 |
 | **Diferencia %** | | | | |
 
 Causas típicas de diferencias a explicar: minutos sin datos (Raspberry apagada), más/menos uso del dashboard que el supuesto, lecturas extra de la consola de Firebase (abrir Firestore en la consola **también cuenta lecturas**), recargas de página, reintentos tras cortes de red, tamaño real de índices.

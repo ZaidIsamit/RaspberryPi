@@ -155,7 +155,7 @@ export default function Home() {
             </div>
           ) : (
             <>
-              {actual.k === "vivo" && <EnVivo orgId={sesion.orgId} dispositivo={dispositivo} />}
+              {actual.k === "vivo" && <EnVivo orgId={sesion.orgId} dispositivo={dispositivo} onIr={ir} />}
               {actual.k === "historico" && <Historico dispositivo={dispositivo} />}
               {actual.k === "registros" && <Registros dispositivo={dispositivo} />}
               {actual.k === "alertas" && <Alertas orgId={sesion.orgId} dispositivo={dispositivo} />}
