@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Preparación de la Raspberry Pi 3 (Raspberry Pi OS 64 bits). Ejecutar UNA vez:
-#   cd smart-campus-iot/raspberry && chmod +x instalar.sh && ./instalar.sh
+# Preparación de la Raspberry Pi 4 (Raspberry Pi OS 64 bits). Ejecutar UNA vez:
+#   cd RaspberryPi/raspberry && chmod +x instalar.sh && ./instalar.sh
 set -euo pipefail
 
 CONFIG_TXT=/boot/firmware/config.txt
@@ -20,7 +20,7 @@ if ! grep -q "^dtoverlay=dht11" "$CONFIG_TXT"; then
   REINICIAR=1
 fi
 
-echo "==> 3/5 Swap de 1 GB (la Pi 3 tiene solo 1 GB de RAM)"
+echo "==> 3/5 Swap de 1 GB (margen para compilar las imágenes)"
 if [ -f /etc/dphys-swapfile ]; then
   sudo sed -i 's/^CONF_SWAPSIZE=.*/CONF_SWAPSIZE=1024/' /etc/dphys-swapfile
   sudo systemctl restart dphys-swapfile || true

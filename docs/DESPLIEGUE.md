@@ -15,10 +15,10 @@ Volver al [README](../README.md).
 
 ### 2. Repositorio en GitHub
 ```bash
-cd smart-campus-iot
+cd RaspberryPi
 git init && git add . && git commit -m "Proyecto base Smart Campus IoT"
 git branch -M main
-git remote add origin https://github.com/TU-USUARIO/smart-campus-iot.git
+git remote add origin https://github.com/ZaidIsamit/RaspberryPi.git
 git push -u origin main
 ```
 > Requisito excluyente: **todos los integrantes deben tener commits**. Repartan partes (ver tabla al final) y que cada uno haga commit con su propia cuenta.
@@ -30,7 +30,7 @@ git push -u origin main
    - `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`
    - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (pega la clave **completa**, con `-----BEGIN…` y los `\n`)
 4. **Deploy**. Cada `git push` a `main` vuelve a desplegar automáticamente.
-5. Prueba: `https://TU-PROYECTO.vercel.app/api/v1/health` debe responder `{"ok":true,...}`.
+5. Prueba: `https://raspberry-pi-y1p2.vercel.app/api/v1/health` debe responder `{"ok":true,...}`.
 
 ### 4. Cuentas de prueba, organizaciones y token del dispositivo
 En tu computador (Node 20+):
@@ -53,12 +53,12 @@ Crea dos organizaciones aisladas, tres usuarios y un dispositivo por organizaci�
 ### 5. Raspberry Pi
 **Conexión (numeración BCM):**
 
-| Sensor | Pin del sensor | Raspberry Pi 3 |
+| Sensor | Pin del sensor | Raspberry Pi 4 |
 |---|---|---|
-| DHT11/DHT22 | VCC | 3,3 V (pin físico 1) |
+| DHT11 | VCC | 3,3 V (pin físico 1) |
 | | DATA | **GPIO17** (pin físico 11) — con resistencia pull-up 10 kΩ a 3,3 V si el módulo no la trae |
 | | GND | GND (pin físico 6) |
-| PIR HC-SR501 | VCC | **5 V** (pin físico 2) — el PIR necesita 5 V para alimentarse |
+| PIR | VCC | **5 V** (pin físico 2) — el PIR necesita 5 V para alimentarse |
 | | OUT | **GPIO18** (pin físico 12) — su salida es de 3,3 V, no necesita divisor |
 | | GND | GND (pin físico 14) |
 
@@ -66,13 +66,13 @@ Crea dos organizaciones aisladas, tres usuarios y un dispositivo por organizaci�
 
 ```bash
 # copia la carpeta raspberry/ a la Pi (o haz git clone del repo en la Pi)
-cd smart-campus-iot/raspberry
+cd RaspberryPi/raspberry
 chmod +x instalar.sh && ./instalar.sh       # Docker, overlay del DHT, swap, NTP, .env
 sudo reboot                                  # solo la primera vez (activa el driver del DHT)
 
-cd smart-campus-iot/raspberry
-nano .env                                    # API_URL=https://TU-PROYECTO.vercel.app  y  DEVICE_TOKEN=...
-docker compose up -d --build                 # la primera compilación tarda ~10-15 min en una Pi 3
+cd RaspberryPi/raspberry
+nano .env                                    # API_URL=https://raspberry-pi-y1p2.vercel.app  y  DEVICE_TOKEN=...
+docker compose up -d --build                 # la primera compilación tarda ~10-15 min en una Raspberry Pi
 ```
 
 **Verificar:**

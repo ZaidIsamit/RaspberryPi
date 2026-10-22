@@ -5,7 +5,7 @@
 ## 1. Escenario de uso
 | Variable | Valor |
 |---|---|
-| Dispositivos | 1 Raspberry Pi 3 (Sala 101) |
+| Dispositivos | 1 Raspberry Pi 4 Model B (Sala 101) |
 | Operación | **Continua, 24 h × 7 días** (sin horario de apagado): 1.440 minutos/día, 10.080 minutos/semana |
 | Sensores | DHT (temp./humedad) cada 10 s · PIR muestreado 10 veces/s, resumido 1/s |
 | Agregación | 1 documento por minuto en el dispositivo |
@@ -28,7 +28,7 @@
 | Lecturas: histórico 24 h | 3 usuarios × 2 × 1.440 | 8.640 | | |
 | **Total lecturas** | | **≈ 13.400** | **≈ 401.000** | **27 % de 50.000** |
 | Almacenamiento | 1.440 × 0,6 KB | ≈ 0,86 MB | ≈ 26 MB | 1 GiB se alcanza en ≈ 3,3 años |
-| Invocaciones Vercel | 1.440 ingest + 2.880 config + ~20 web | ≈ 4.340 | ≈ 130.000 | comparar con el límite mensual del plan Hobby [citar] |
+| Invocaciones Vercel | 1.440 ingest + 2.880 config + ~20 web | ≈ 4.340 | ≈ 130.000 | 13 % de 1.000.000/mes del plan Hobby ([fuente](https://vercel.com/docs/limits/fair-use-guidelines)) |
 
 ## 3. Medición real (7 días)
 | Día | Escrituras (Firebase) | Lecturas (Firebase) | Almacenamiento | Invocaciones (Vercel) |
@@ -47,8 +47,11 @@
 Causas típicas de diferencias a explicar: minutos sin datos (Raspberry apagada), más/menos uso del dashboard que el supuesto, lecturas extra de la consola de Firebase (abrir Firestore en la consola **también cuenta lecturas**), recargas de página, reintentos tras cortes de red, tamaño real de índices.
 
 ## 4. Límites
+Fuentes (consultadas el 21-oct-2026): [cuotas de Firestore](https://firebase.google.com/docs/firestore/quotas) (1 GiB, 50.000 lecturas, 20.000 escrituras y 20.000 eliminaciones por día; al superarlas en Spark las operaciones se rechazan hasta el reinicio diario, sin cobro) y [uso justo de Vercel](https://vercel.com/docs/limits/fair-use-guidelines) (Hobby: 1.000.000 invocaciones, 4 h de CPU activa y 100 GB de transferencia al mes; solo uso personal no comercial).
+
 - Escrituras: 20.000 / 2.890 ≈ **6 dispositivos** con el diseño actual.
-- Lecturas: depende sobre todo del dashboard. Sin usuarios: 50.000 / 4.320 ≈ 11 dispositivos; el histórico de 24 h cuesta 1.440 lecturas → ≈ 34 consultas diarias por dispositivo agotan el límite.
+- Lecturas: con el dashboard actual (9.060 lecturas fijas al día), (50.000 − 9.060) / 4.320 ≈ **9 dispositivos**. Sin usuarios: 50.000 / 4.320 ≈ 11; el histórico de 24 h cuesta 1.440 lecturas → ≈ 34 consultas diarias por dispositivo agotan el límite.
+- Invocaciones de Vercel Hobby: 1.000.000 / 129.600 ≈ **7 dispositivos**.
 - Almacenamiento: ≈ 3,3 años para 1 dispositivo; ≈ 4 meses con 10.
 - **Primer cuello de botella:** escrituras diarias (por la actualización del dispositivo en cada lote), luego lecturas si se consulta mucho el histórico.
 
@@ -59,29 +62,33 @@ Causas típicas de diferencias a explicar: minutos sin datos (Raspberry apagada)
 | 2 | Alertas solo en cambio de estado (no cada minuto mientras dure) | hasta 1.440 × 4 tipos | ~10 | ≈ 99 % |
 | 3 | `ultimaLectura` en el documento del dispositivo | tarjetas "ahora" consultando la colección | 1 lectura | |
 | 4 | Lote cada 5 min y config cada 2 min (propuesta, configurable desde la web) | 2.880 escrituras + 4.320 lecturas de dispositivo | 1.728 escrituras + 1.008 lecturas | 40 % / 77 % → **11 dispositivos** dentro del límite de escrituras |
-| 5 | Desactivar índices de campos no consultados | índice por cada campo | 5 campos menos indexados | menor almacenamiento [MEDIR] |
+| 5 | Desactivar índices de campos no consultados (desplegado el 21-oct-2026) | índice por cada campo | 5 campos menos indexados | menor almacenamiento [MEDIR] |
 
 > Para la #4 midan 1-2 días con `intervaloEnvioSeg=60` y luego con `300` (y `CONFIG_POLL_SEG=120` en `.env`) y muestren la diferencia en la consola.
 
 ## 6. Proyección de crecimiento (fuera de la capa gratuita, Firestore plan Blaze)
 Fórmula por mes: `costo = (escrituras − gratis)/100.000 × precio_escritura + (lecturas − gratis)/100.000 × precio_lectura + (GiB − 1) × precio_GiB`.
-Usen los **precios oficiales vigentes** de la región elegida (https://firebase.google.com/pricing y https://cloud.google.com/firestore/pricing) y citen la fecha de consulta.
+Precios oficiales de la región de la base de datos, **Santiago (`southamerica-west1`)**, consultados el 21-oct-2026 en [cloud.google.com/firestore/pricing](https://cloud.google.com/firestore/pricing): USD 0,043 por 100.000 lecturas, USD 0,129 por 100.000 escrituras y USD 0,215 por GiB/mes. Vercel Pro ([vercel.com/pricing](https://vercel.com/pricing)): USD 20/mes por integrante con USD 20 de crédito de uso, y USD 0,60 por millón de invocaciones. La cuota gratuita diaria de Firestore se mantiene en Blaze. Se suman a las lecturas de dispositivos las 9.060 diarias del dashboard (3 usuarios).
 
-| Dispositivos | Escrituras/mes | Lecturas/mes (dispositivos) | Almacen. acumulado 1 año | Costo mensual estimado |
-|---|---|---|---|---|
-| 10 | 867.000 | 1.296.000 | ≈ 3,1 GB | [calcular] |
-| 100 | 8.670.000 | 12.960.000 | ≈ 31 GB | [calcular] |
-| 1.000 | 86.700.000 | 129.600.000 | ≈ 310 GB | [calcular] |
+| Dispositivos | Escrituras/mes | Lecturas/mes | Almacen. acumulado 1 año | Firestore USD/mes | Vercel USD/mes | Total USD/mes |
+|---|---|---|---|---|---|---|
+| 10 | 867.000 | 1.567.800 | ≈ 3,1 GB | 0,83 | 20,00 | 20,83 |
+| 100 | 8.670.000 | 13.231.800 | ≈ 31,4 GB | 21,99 | 20,00 | 41,99 |
+| 1.000 | 86.700.000 | 129.871.800 | ≈ 313,9 GB | 233,54 | 77,76 | 311,30 |
+
+Sin incluir CPU activa ni memoria de Vercel ([MEDIR] durante los 7 días). Con 1.000 dispositivos las escrituras son el 48 % del costo de Firestore.
 
 A 100+ dispositivos también deben revisar límites de invocaciones y ejecución de funciones de Vercel; con 1.000 dispositivos enviando cada 60 s son ≈ 43 millones de invocaciones/mes → conviene subir el intervalo de envío o pasar a un broker MQTT gestionado.
 
 ## 7. Costos de migración (escenario actual y 100 dispositivos)
 | Alternativa | Componentes | Costo actual | Costo 100 disp. | Responsabilidades del grupo |
 |---|---|---|---|---|
-| **PaaS**: Vercel Pro + Firebase Blaze | igual que hoy, sin límites diarios | [calculadora] | [calculadora] | Solo código y reglas; el proveedor gestiona parches, respaldos (opcional), escalamiento |
-| **PaaS**: Google App Engine / Azure App Service + Firestore | API como app gestionada | [calculadora] | [calculadora] | Código, configuración de escalado |
-| **IaaS**: AWS EC2 / Azure VM / Compute Engine + PostgreSQL o MongoDB administrado por el grupo | 1 VM pequeña (API + BD) | [calculadora] | [calculadora] (VM mayor o 2 VMs) | Parches del SO, TLS, firewall, respaldos, monitoreo, escalamiento manual, alta disponibilidad |
+| **PaaS**: Vercel Pro + Firebase Blaze | igual que hoy, sin límites diarios | USD 20,00 | USD 41,99 (Vercel 20,00 + Firestore 21,99) | Solo código y reglas; el proveedor gestiona parches, respaldos (opcional), escalamiento |
+| **PaaS**: Azure App Service Linux + Firestore | web y API como app gestionada | USD 12,41 (B1: USD 0,017/h) | USD 46,81 (B2: USD 0,034/h = 24,82 + Firestore 21,99) | Código, configuración de escalado |
+| **IaaS**: AWS EC2 + PostgreSQL administrado por el grupo | 1 VM (API + web + BD), disco gp3, snapshots | USD 16,16 (t4g.small USD 0,0168/h = 12,26 + 30 GB × 0,08 + snapshots 30 GB × 0,05) | USD 32,33 (t4g.medium USD 0,0336/h = 24,53 + 60 GB × 0,08 + snapshots 60 GB × 0,05) | Parches del SO, TLS, firewall, respaldos, monitoreo, escalamiento manual, alta disponibilidad |
+
+Supuestos: 730 h/mes, pago por uso sin descuentos; Azure East US ([API de precios minoristas](https://prices.azure.com/api/retail/prices)); AWS US East N. Virginia ([EC2](https://aws.amazon.com/ec2/pricing/on-demand/), [EBS](https://aws.amazon.com/ebs/pricing/)); precios consultados el 21-oct-2026. Agregar al informe capturas de las calculadoras con estas configuraciones.
 
 Calculadoras: AWS https://calculator.aws · Azure https://azure.microsoft.com/pricing/calculator · Google Cloud https://cloud.google.com/products/calculator · Vercel https://vercel.com/pricing
 
-**Conclusión a desarrollar:** para el escenario actual la PaaS gratuita es suficiente; a 100 dispositivos el costo de Firestore crece con las operaciones (el costo variable domina), mientras que la IaaS tiene costo fijo más bajo por volumen pero traslada al grupo la operación (horas-persona de mantención, seguridad y respaldos).
+**Conclusión:** para el escenario actual la PaaS gratuita es suficiente. Con 100 dispositivos la IaaS es ≈ USD 10/mes más barata que la PaaS A, pero traslada al grupo la operación completa (parches, respaldos, seguridad, escalamiento); la PaaS con Vercel Pro y Firebase Blaze es la recomendada porque no cambia el código y el costo crece solo con el uso.

@@ -2,7 +2,7 @@
 
 Solemne 1 · Infraestructura TI · Universidad Andrés Bello
 
-Sistema que mide en tiempo real la **temperatura, la humedad y la presencia de personas** en una sala usando una Raspberry Pi 3, y muestra esa información en una página web.
+Sistema que mide en tiempo real la **temperatura, la humedad y la presencia de personas** en una sala usando una Raspberry Pi 4, y muestra esa información en una página web.
 
 - **Plataforma web:** <https://raspberry-pi-y1p2.vercel.app>
 - **Repositorio:** <https://github.com/ZaidIsamit/RaspberryPi>
@@ -17,12 +17,12 @@ Sistema que mide en tiempo real la **temperatura, la humedad y la presencia de p
 
 ## Qué hicimos
 
-1. **Conectamos dos sensores a la Raspberry Pi 3:** un DHT (temperatura y humedad) y un PIR (movimiento).
+1. **Conectamos dos sensores a la Raspberry Pi 4:** un DHT (temperatura y humedad) y un PIR (movimiento).
 2. **Dividimos el software de la Raspberry en 6 microservicios con Docker:** uno lee el clima, otro el movimiento, otro procesa los datos, otro los envía a la nube, otro vigila la salud del equipo, y un broker MQTT los comunica entre sí.
 3. **Combinamos las lecturas para generar información útil:** cada minuto se calcula si la sala está ocupada, un índice de confort (0 a 100) y se generan alertas (temperatura alta o baja, humedad alta, presencia fuera de horario).
 4. **Guardamos los datos en la nube:** la Raspberry envía un resumen por minuto a nuestra API en Vercel, que lo valida y lo guarda en Cloud Firestore. Si se corta internet, las lecturas quedan guardadas en la Raspberry y se reenvían al volver la conexión, sin duplicados.
 5. **Construimos la página web**, con inicio de sesión y dos roles:
-   - **Panel en vivo:** valores actuales, gráfico de la última hora y estado de los microservicios.
+   - **Panel en vivo:** valores actuales, gráfico de los últimos 20 registros y estado de los microservicios.
    - **Histórico:** promedios y gráfico por rango de fechas.
    - **Todos los registros:** tabla con cada lectura por minuto, exportable a CSV.
    - **Alertas:** historial de alertas con filtros.

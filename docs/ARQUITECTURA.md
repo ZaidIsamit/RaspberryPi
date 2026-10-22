@@ -13,7 +13,7 @@ Problema: saber, por sala, **si está ocupada y en qué condiciones** para gesti
 
 ```mermaid
 flowchart LR
-  subgraph RPI["Raspberry Pi 3 · Docker Compose"]
+  subgraph RPI["Raspberry Pi 4 · Docker Compose"]
     DHT["DHT (GPIO17)"] -->|driver kernel IIO| SC[sensor-clima]
     PIR["PIR (GPIO18)"] -->|/dev/gpiochip0| SM[sensor-movimiento]
     SC -->|sensores/clima| MQ[(Mosquitto)]
@@ -75,7 +75,7 @@ orgs/{orgId}                                   { nombre }
 
 **Índices:** todas las consultas son de un solo campo dentro de una subcolección (`orderBy ts`, rango por `ts`), cubiertas por los índices automáticos; no se requieren índices compuestos. `firestore.indexes.json` **desactiva** la indexación de campos que nunca se consultan (`estado`, `tMin`, `tMax`, `nClima`, `mensaje`) para reducir el almacenamiento de índices.
 
-## 5. API REST (`https://TU-PROYECTO.vercel.app/api/v1`)
+## 5. API REST (`https://raspberry-pi-y1p2.vercel.app/api/v1`)
 
 | Método | Ruta | Autenticación | Descripción |
 |---|---|---|---|
@@ -90,6 +90,7 @@ orgs/{orgId}                                   { nombre }
 
 Ejemplos:
 ```bash
+API=https://raspberry-pi-y1p2.vercel.app
 # Envío desde el dispositivo
 curl -X POST $API/api/v1/ingest -H "Authorization: Bearer campus-norte.sala-101.XXXX" \
   -H "Content-Type: application/json" \
@@ -122,4 +123,6 @@ Códigos: `400` datos inválidos, `401` token inválido/revocado, `403` rol insu
 - Secretos fuera del repositorio: `.env`, `.env.local` y JSON de cuenta de servicio en `.gitignore`.
 
 ## 7. Hardware
-Ver tabla de conexión en [DESPLIEGUE.md](DESPLIEGUE.md#5-raspberry-pi). El HC-SR501 se alimenta con 5 V pero su salida es 3,3 V (compatible con GPIO). El DHT se alimenta con 3,3 V, así su señal es de 3,3 V. No se usan sensores analógicos (no se requiere ADS1115).
+Dispositivo: **Raspberry Pi 4 Model B**. La rúbrica pide al menos una Raspberry Pi 3; la Pi 4 cumple ese requisito y es compatible con todo el diseño: mismo cabezal GPIO de 40 pines con la misma numeración, arquitectura ARM64 y Raspberry Pi OS de 64 bits.
+
+Ver tabla de conexión en [DESPLIEGUE.md](DESPLIEGUE.md#5-raspberry-pi). El sensor PIR se alimenta con 5 V pero su salida es 3,3 V (compatible con GPIO). El DHT se alimenta con 3,3 V, así su señal es de 3,3 V. No se usan sensores analógicos (no se requiere ADS1115).

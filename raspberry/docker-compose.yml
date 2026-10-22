@@ -1,4 +1,4 @@
-# Smart Campus IoT - microservicios de la Raspberry Pi 3
+# Smart Campus IoT - microservicios de la Raspberry Pi 4
 # Uso:  docker compose up -d --build
 # Todos los servicios se reinician solos y arrancan al encender la placa
 # (Docker queda habilitado con: sudo systemctl enable docker).
@@ -51,7 +51,7 @@ services:
     build: ./sensor-clima
     image: smart-campus/sensor-clima:1.0
 
-  # 3) Adquisición de movimiento (PIR HC-SR501 en GPIO18)
+  # 3) Adquisición de movimiento (sensor PIR en GPIO18)
   sensor-movimiento:
     <<: *python-service
     build: ./sensor-movimiento

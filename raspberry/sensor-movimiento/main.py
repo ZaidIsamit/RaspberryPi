@@ -1,6 +1,6 @@
 """
 Microservicio: sensor-movimiento (adquisición)
-Responsabilidad única: leer el sensor PIR HC-SR501 en GPIO18 (BCM) y publicar,
+Responsabilidad única: leer el sensor PIR en GPIO18 (BCM) y publicar,
 cada segundo, en  sensores/movimiento:
   {"activo": bool, "flancos": int, "ts": float}
   - activo:  hubo movimiento en algún momento de ese segundo
