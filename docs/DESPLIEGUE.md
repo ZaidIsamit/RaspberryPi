@@ -21,8 +21,6 @@ git branch -M main
 git remote add origin https://github.com/ZaidIsamit/RaspberryPi.git
 git push -u origin main
 ```
-> Requisito excluyente: **todos los integrantes deben tener commits**. Repartan partes (ver tabla al final) y que cada uno haga commit con su propia cuenta.
-
 ### 3. Vercel (plan Hobby, sin tarjeta)
 1. <https://vercel.com> → **Add New → Project** → importa el repositorio.
 2. **Root Directory: `web`** (importante). Framework: Next.js (se detecta solo).
@@ -86,23 +84,10 @@ El primer documento aparece en Firestore ~1-2 minutos después de arrancar (se a
 
 ---
 
-## Guion de la demostración en vivo (rúbrica criterio 7)
+## Demostración en vivo
 1. **Datos en tiempo real**: sección *Panel en vivo*; pasar la mano frente al PIR → al cerrar el minuto cambia a "Ocupada".
 2. **Cambio de configuración**: en *Dispositivos* bajar *Temp. máxima* a un valor menor a la actual → en ≤30 s `docker compose logs procesamiento` muestra "Umbrales aplicados en caliente" y aparece la alerta `TEMP_ALTA`. Sin reiniciar nada.
 3. **Recuperación tras desconexión**: apagar el hotspot 3-4 minutos → el panel muestra "Desconectado" y la salud indica registros "en buffer"; al volver la red se envía todo y el gráfico se completa **sin huecos ni duplicados**.
 4. **Estado de los microservicios**: tabla en *Panel en vivo* y `curl localhost:8080/health`; `docker stop smart-campus-procesamiento-1` lo muestra como falla y Docker lo vuelve a levantar (o `docker compose start`).
 5. **Aislamiento**: entrar como `admin.sur@unab.cl` → no ve la Sala 101 (las reglas de Firestore lo bloquean). Entrar como `consulta.norte@unab.cl` → no puede editar.
 
-Graben esto mismo como **video de respaldo (3-5 min)**.
-
-## Reparto sugerido (cada uno debe poder explicar la parte de otro)
-| Integrante | Parte |
-|---|---|
-| 1 | Hardware + `sensor-clima` + `sensor-movimiento` |
-| 2 | `procesamiento` + `salud` + docker-compose |
-| 3 | `sincronizacion` + API (`web/app/api`, `web/lib`) + reglas |
-| 4 | Dashboard (`web/components`) + evaluación de uso y costos |
-
-## Fechas
-- **Hoy, miércoles 21-oct**: el sistema debe quedar enviando a Firestore para tener 7 días de medición (21 → 28).
-- **Miércoles 28-oct 23:59**: zip con informe + presentación en Canvas (el informe incluye link del repo y URL pública).

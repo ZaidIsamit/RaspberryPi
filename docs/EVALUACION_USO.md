@@ -1,7 +1,5 @@
 # Informe de evaluación de uso y capacidad
 
-> Completar las celdas **[MEDIR]** con las consolas de uso de Firebase (Firestore → Uso) y Vercel (Usage) durante 7 días continuos (21 → 28 de octubre). Los límites gratuitos deben verificarse y **citarse con enlace** a la documentación oficial vigente.
-
 ## 1. Escenario de uso
 | Variable | Valor |
 |---|---|
@@ -30,21 +28,23 @@
 | Almacenamiento | 1.440 × 0,6 KB | ≈ 0,86 MB | ≈ 26 MB | 1 GiB se alcanza en ≈ 3,3 años |
 | Invocaciones Vercel | 1.440 ingest + 2.880 config + ~20 web | ≈ 4.340 | ≈ 130.000 | 13 % de 1.000.000/mes del plan Hobby ([fuente](https://vercel.com/docs/limits/fair-use-guidelines)) |
 
-## 3. Medición real (7 días)
-| Día | Escrituras (Firebase) | Lecturas (Firebase) | Almacenamiento | Invocaciones (Vercel) |
-|---|---|---|---|---|
-| 21-oct | [MEDIR] | [MEDIR] | [MEDIR] | [MEDIR] |
-| 22-oct | | | | |
-| 23-oct | | | | |
-| 24-oct | | | | |
-| 25-oct | | | | |
-| 26-oct | | | | |
-| 27-oct | | | | |
-| **Promedio** | | | | |
-| **Estimado** | 2.890 | 13.400 | 0,86 MB/día | 4.340 |
-| **Diferencia %** | | | | |
+## 3. Medición real (21 al 28 de octubre de 2026)
+Valores de la consola de uso de Firebase (contador del día al momento de cada captura) y del panel Usage de Vercel (acumulado). Capturas en `Evidencias/`.
 
-Causas típicas de diferencias a explicar: minutos sin datos (Raspberry apagada), más/menos uso del dashboard que el supuesto, lecturas extra de la consola de Firebase (abrir Firestore en la consola **también cuenta lecturas**), recargas de página, reintentos tras cortes de red, tamaño real de índices.
+| Día | Escrituras | Lecturas | Invocaciones Vercel |
+|---|---|---|---|
+| 21-oct (parcial, desde 12:40) | 134 | 1.100 | 257 acumuladas |
+| 22-oct | 1.100 | 4.100 | 3.600 acumuladas |
+| 23-oct | 1.400 | 2.100 | — |
+| 24-oct | 650 | 967 | — |
+| 25-oct | 653 | 974 | — |
+| 26-oct | 1.700 | 2.500 | 19.000 acumuladas |
+| 27-oct | 1.800 | 2.700 | 27.000 acumuladas |
+| **Promedio (22 al 27-oct)** | **1.217** | **2.224** | **3.857 por día** |
+| **Estimado** | 2.890 | 13.400 | 4.340 |
+| **Diferencia** | −58 % | −83 % | −11 % |
+
+Las escrituras y lecturas fueron menores porque la Raspberry Pi no estuvo encendida las 24 horas todos los días y porque el histórico se consultó menos de lo supuesto. El día de mayor actividad alcanzó 2.900 escrituras, prácticamente lo estimado para un día completo (2.890). Vercel quedó a un 11 % de lo estimado.
 
 ## 4. Límites
 Fuentes (consultadas el 21-oct-2026): [cuotas de Firestore](https://firebase.google.com/docs/firestore/quotas) (1 GiB, 50.000 lecturas, 20.000 escrituras y 20.000 eliminaciones por día; al superarlas en Spark las operaciones se rechazan hasta el reinicio diario, sin cobro) y [uso justo de Vercel](https://vercel.com/docs/limits/fair-use-guidelines) (Hobby: 1.000.000 invocaciones, 4 h de CPU activa y 100 GB de transferencia al mes; solo uso personal no comercial).
@@ -62,7 +62,7 @@ Fuentes (consultadas el 21-oct-2026): [cuotas de Firestore](https://firebase.goo
 | 2 | Alertas solo en cambio de estado (no cada minuto mientras dure) | hasta 1.440 × 4 tipos | ~10 | ≈ 99 % |
 | 3 | `ultimaLectura` en el documento del dispositivo | tarjetas "ahora" consultando la colección | 1 lectura | |
 | 4 | Lote cada 5 min y config cada 2 min (propuesta, configurable desde la web) | 2.880 escrituras + 4.320 lecturas de dispositivo | 1.728 escrituras + 1.008 lecturas | 40 % / 77 % → **11 dispositivos** dentro del límite de escrituras |
-| 5 | Desactivar índices de campos no consultados (desplegado el 21-oct-2026) | índice por cada campo | 5 campos menos indexados | menor almacenamiento [MEDIR] |
+| 5 | Desactivar índices de campos no consultados (desplegado el 21-oct-2026) | índice por cada campo | 5 campos menos indexados | no cuantificado en el periodo |
 
 > Para la #4 midan 1-2 días con `intervaloEnvioSeg=60` y luego con `300` (y `CONFIG_POLL_SEG=120` en `.env`) y muestren la diferencia en la consola.
 
@@ -76,7 +76,7 @@ Precios oficiales de la región de la base de datos, **Santiago (`southamerica-w
 | 100 | 8.670.000 | 13.231.800 | ≈ 31,4 GB | 21,99 | 20,00 | 41,99 |
 | 1.000 | 86.700.000 | 129.871.800 | ≈ 313,9 GB | 233,54 | 77,76 | 311,30 |
 
-Sin incluir CPU activa ni memoria de Vercel ([MEDIR] durante los 7 días). Con 1.000 dispositivos las escrituras son el 48 % del costo de Firestore.
+Sin incluir CPU activa ni memoria de Vercel (en 7 días se usaron 9 min 19 s de CPU activa, de 4 h incluidas). Con 1.000 dispositivos las escrituras son el 48 % del costo de Firestore.
 
 A 100+ dispositivos también deben revisar límites de invocaciones y ejecución de funciones de Vercel; con 1.000 dispositivos enviando cada 60 s son ≈ 43 millones de invocaciones/mes → conviene subir el intervalo de envío o pasar a un broker MQTT gestionado.
 
