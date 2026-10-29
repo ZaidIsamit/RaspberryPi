@@ -57,10 +57,10 @@ Crea dos organizaciones aisladas, tres usuarios y un dispositivo por organizaci�
 |---|---|---|
 | DHT11 | VCC | 3,3 V (pin físico 1) |
 | | DATA | **GPIO17** (pin físico 11) — con resistencia pull-up 10 kΩ a 3,3 V si el módulo no la trae |
-| | GND | GND (pin físico 6) |
+| | GND | GND (pin físico 14) |
 | PIR | VCC | **5 V** (pin físico 2) — el PIR necesita 5 V para alimentarse |
 | | OUT | **GPIO18** (pin físico 12) — su salida es de 3,3 V, no necesita divisor |
-| | GND | GND (pin físico 14) |
+| | GND | GND (pin físico 20) |
 
 > Si conectaron a los **pines físicos** 17 y 18 en vez de GPIO17/GPIO18, ajusten `GPIO_PIR` en `.env` y `DHT_PIN` al correr el instalador.
 
